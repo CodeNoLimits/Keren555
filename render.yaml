@@ -1,0 +1,26 @@
+services:
+  # Web Service - Frontend + Backend
+  - type: web
+    name: keren-rabbi-israel
+    env: node
+    region: frankfurt
+    plan: free
+    branch: claude/rebuild-site-deployment-011CUra6Sih5hF9tMqWjfTbG
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # PayPal Configuration (à remplir)
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: BASE_URL
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true
