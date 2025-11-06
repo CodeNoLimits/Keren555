@@ -14,7 +14,8 @@ import {
   Users,
   Trophy,
   ArrowRight,
-  CreditCard
+  CreditCard,
+  CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,45 +32,95 @@ export default function RafflePage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      // Create PayPal order
-      const response = await fetch('/api/create-paypal-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: parseFloat(formData.amount),
-          currency: 'ILS',
-          description: `Donation for Uman Raffle - ${formData.name}`,
-          ...formData
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.approvalUrl) {
-        // Redirect to PayPal
-        window.location.href = data.approvalUrl;
-      } else {
-        throw new Error('Failed to create PayPal order');
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: isHebrew ? 'שגיאה' : 'Error',
-        description: isHebrew ? 'אירעה שגיאה בתשלום. אנא נסו שוב.' : 'Payment error occurred. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
+    // DEMO MODE - Simulate successful entry
+    setTimeout(() => {
+      setSuccess(true);
       setLoading(false);
-    }
+
+      toast({
+        title: isHebrew ? '✅ נרשמת בהצלחה!' : '✅ Successfully Registered!',
+        description: isHebrew
+          ? `נרשמת להגרלה עם ${Math.floor(parseFloat(formData.amount) / 35)} כניסות! בהצלחה!`
+          : `Registered for raffle with ${Math.floor(parseFloat(formData.amount) / 35)} entries! Good luck!`,
+      });
+    }, 2000);
   };
 
   const donationAmounts = [35, 50, 100, 180, 360, 500];
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50" style={{ direction: isHebrew ? 'rtl' : 'ltr' }}>
+        <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
+
+        <section className="py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <Card className="shadow-2xl border-0 bg-gradient-to-br from-green-50 to-blue-50">
+              <CardContent className="pt-12 pb-12">
+                <CheckCircle className="w-24 h-24 text-green-600 mx-auto mb-6" />
+
+                <h1 className="text-4xl font-bold text-slate-900 mb-4">
+                  {isHebrew ? '🎉 מזל טוב!' : '🎉 Congratulations!'}
+                </h1>
+
+                <p className="text-xl text-slate-700 mb-6">
+                  {isHebrew
+                    ? `${formData.name}, נרשמת בהצלחה להגרלת הטיסה לאומן!`
+                    : `${formData.name}, you've successfully registered for the Uman flight raffle!`}
+                </p>
+
+                <div className="bg-white rounded-lg p-6 mb-8 shadow-lg">
+                  <div className="grid grid-cols-2 gap-6 text-left">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">{isHebrew ? 'סכום תרומה' : 'Donation Amount'}</p>
+                      <p className="text-2xl font-bold text-blue-600">₪{formData.amount}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">{isHebrew ? 'מספר כניסות' : 'Number of Entries'}</p>
+                      <p className="text-2xl font-bold text-green-600">{Math.floor(parseFloat(formData.amount) / 35)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">{isHebrew ? 'דוא״ל' : 'Email'}</p>
+                      <p className="font-medium text-slate-900">{formData.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">{isHebrew ? 'טלפון' : 'Phone'}</p>
+                      <p className="font-medium text-slate-900">{formData.phone}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-slate-600 mb-8">
+                  {isHebrew
+                    ? 'תקבל אישור במייל ו-SMS. ההגרלה תתקיים בקרוב!'
+                    : 'You will receive confirmation via email and SMS. The draw will take place soon!'}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                      {isHebrew ? 'חזרה לעמוד הבית' : 'Back to Home'}
+                    </Button>
+                  </Link>
+                  <Link href="/store">
+                    <Button size="lg" variant="outline">
+                      {isHebrew ? 'לחנות המקוונת' : 'Visit Store'}
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50" style={{ direction: isHebrew ? 'rtl' : 'ltr' }}>
@@ -125,8 +176,8 @@ export default function RafflePage() {
                   </CardTitle>
                   <CardDescription>
                     {isHebrew
-                      ? 'מלאו את הפרטים ובצעו תרומה מאובטחת דרך PayPal'
-                      : 'Fill in your details and make a secure donation via PayPal'}
+                      ? 'מלאו את הפרטים להצטרפות מיידית (מצב הדגמה - ללא תשלום)'
+                      : 'Fill in your details for immediate entry (Demo mode - no payment)'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -215,16 +266,16 @@ export default function RafflePage() {
                         <span>{isHebrew ? 'מעבד...' : 'Processing...'}</span>
                       ) : (
                         <>
-                          <CreditCard className={`w-5 h-5 ${isHebrew ? 'ml-2' : 'mr-2'}`} />
-                          {isHebrew ? `תרמו ₪${formData.amount} והצטרפו להגרלה` : `Donate ₪${formData.amount} & Join Raffle`}
+                          <Check className={`w-5 h-5 ${isHebrew ? 'ml-2' : 'mr-2'}`} />
+                          {isHebrew ? `הצטרפו להגרלה (₪${formData.amount})` : `Join Raffle (₪${formData.amount})`}
                         </>
                       )}
                     </Button>
 
                     <p className="text-xs text-center text-slate-500">
                       {isHebrew
-                        ? '🔒 תשלום מאובטח דרך PayPal. כל התרומות מגיעות ישירות לקרן רבי ישראל.'
-                        : '🔒 Secure payment via PayPal. All donations go directly to Rabbi Israel Foundation.'}
+                        ? '🎭 מצב הדגמה - ללא תשלום אמיתי. לתשלום אמיתי יש להגדיר PayPal.'
+                        : '🎭 Demo mode - no real payment. For real payments, configure PayPal.'}
                     </p>
                   </form>
                 </CardContent>
