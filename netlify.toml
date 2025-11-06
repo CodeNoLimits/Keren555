@@ -1,16 +1,17 @@
 # Configuration Netlify - Keren Rabbi Israël
-# Frontend Vite + React uniquement (backend à déployer séparément)
+# Déploiement optimisé avec build automatique
 
 [build]
-  # Commande de build pour le frontend Vite
-  command = "npm run build"
+  # Commande de build complète
+  command = "npm install && npm run build"
 
-  # Répertoire contenant les fichiers buildés (frontend Vite)
+  # Répertoire de publication
   publish = "dist/public"
 
-  # Variables d'environnement nécessaires pour le build
+  # Variables d'environnement
   [build.environment]
     NODE_VERSION = "20"
+    NODE_ENV = "production"
 
 # Redirections pour SPA (Single Page Application)
 [[redirects]]
@@ -18,7 +19,7 @@
   to = "/index.html"
   status = 200
 
-# Headers de sécurité
+# Headers de sécurité optimisés
 [[headers]]
   for = "/*"
   [headers.values]
@@ -26,9 +27,24 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Robots-Tag = "index, follow"
 
-# Configuration pour les assets statiques
+# Cache agressif pour les assets
 [[headers]]
   for = "/assets/*"
   [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache pour les images WebP optimisées
+[[headers]]
+  for = "/images/optimized/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "image/webp"
+
+# Configuration des images
+[[headers]]
+  for = "*.webp"
+  [headers.values]
+    Content-Type = "image/webp"
     Cache-Control = "public, max-age=31536000, immutable"
